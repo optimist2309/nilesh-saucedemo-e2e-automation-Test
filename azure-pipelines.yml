@@ -1,0 +1,179 @@
+trigger:
+  - main
+  - develop
+
+pr:
+  - main
+  - develop
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  nodeVersion: '18.x'
+  playwrightVersion: '1.48.1'
+
+stages:
+  - stage: Build
+    displayName: 'Build and Setup'
+    jobs:
+      - job: BuildAndSetup
+        displayName: 'Install Dependencies and Setup'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+            displayName: 'Install Node.js'
+
+          - task: Cache@2
+            inputs:
+              key: 'npm | "$(Agent.OS)" | package-lock.json'
+              restoreKeys: |
+                npm | "$(Agent.OS)"
+              path: $(npm_config_cache)
+            displayName: 'Cache npm packages'
+
+          - script: npm install
+            displayName: 'Install npm dependencies'
+
+          - script: npx playwright install --with-deps
+            displayName: 'Install Playwright browsers and dependencies'
+
+          - script: npx playwright install chromium
+            displayName: 'Install Chromium browser'
+
+  - stage: Lint
+    displayName: 'Lint and TypeScript Check'
+    dependsOn: Build
+    jobs:
+      - job: TypeScriptCheck
+        displayName: 'TypeScript Compilation Check'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+            displayName: 'Install Node.js'
+
+          - script: npm install
+            displayName: 'Install dependencies'
+
+          - script: npx tsc --noEmit
+            displayName: 'TypeScript compilation check'
+            continueOnError: true
+
+  - stage: Test
+    displayName: 'Run Playwright Tests'
+    dependsOn: Build
+    jobs:
+      - job: PlaywrightTests
+        displayName: 'Execute Playwright Tests'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+            displayName: 'Install Node.js'
+
+          - script: npm install
+            displayName: 'Install dependencies'
+
+          - script: npx playwright install --with-deps chromium
+            displayName: 'Install Playwright with dependencies'
+
+          - script: |
+              if exist .env.ci (
+                echo Loading .env.ci configuration
+                copy /Y .env.ci .env
+              ) else (
+                echo Using default environment configuration
+              )
+            displayName: 'Load CI environment configuration'
+            condition: eq(variables['Agent.OS'], 'Windows_NT')
+
+          - script: |
+              if [ -f .env.ci ]; then
+                echo "Loading .env.ci configuration"
+                cp .env.ci .env
+              else
+                echo "Using default environment configuration"
+              fi
+            displayName: 'Load CI environment configuration (Linux/Mac)'
+            condition: ne(variables['Agent.OS'], 'Windows_NT')
+
+          - script: npm test -- --reporter=html,junit
+            displayName: 'Run all Playwright tests'
+            env:
+              CI: 'true'
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: 'junit.xml'
+              searchFolder: '$(System.DefaultWorkingDirectory)'
+              testRunTitle: 'Playwright Test Results'
+            displayName: 'Publish test results'
+
+          - task: PublishBuildArtifacts@1
+            condition: always()
+            inputs:
+              pathToPublish: 'playwright-report'
+              artifactName: 'playwright-html-report'
+              publishLocation: 'Container'
+            displayName: 'Publish Playwright HTML Report'
+
+          - task: PublishBuildArtifacts@1
+            condition: failed()
+            inputs:
+              pathToPublish: 'test-results'
+              artifactName: 'test-results'
+              publishLocation: 'Container'
+            displayName: 'Publish test results on failure'
+
+  - stage: ReportAndNotify
+    displayName: 'Generate Reports'
+    dependsOn: Test
+    condition: always()
+    jobs:
+      - job: GenerateReport
+        displayName: 'Generate Test Report'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+            displayName: 'Install Node.js'
+
+          - script: npm install
+            displayName: 'Install dependencies'
+
+          - script: npx playwright install --with-deps chromium
+            displayName: 'Install Playwright with dependencies'
+
+          - script: npm test
+            condition: false
+            displayName: 'Placeholder (tests already run in Test stage)'
+
+          - task: PublishBuildArtifacts@1
+            condition: always()
+            inputs:
+              pathToPublish: 'playwright-report'
+              artifactName: 'playwright-report-final'
+              publishLocation: 'Container'
+            displayName: 'Publish final Playwright report'
+
+          - task: CopyFiles@2
+            condition: always()
+            inputs:
+              sourceFolder: '$(System.DefaultWorkingDirectory)'
+              contents: |
+                playwright-report/**
+                test-results/**
+              targetFolder: '$(Build.ArtifactStagingDirectory)'
+            displayName: 'Copy reports to staging directory'
+
+          - task: PublishBuildArtifacts@1
+            condition: always()
+            inputs:
+              pathToPublish: '$(Build.ArtifactStagingDirectory)'
+              artifactName: 'test-artifacts'
+              publishLocation: 'Container'
+            displayName: 'Publish all test artifacts'

@@ -1,0 +1,27 @@
+{
+  "name": "saucedemo-e2e-automation",
+  "version": "1.0.0",
+  "description": "Playwright-based E2E automation tests for saucedemo.com",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report"
+  },
+  "keywords": [
+    "playwright",
+    "e2e",
+    "automation",
+    "testing"
+  ],
+  "author": "Nilesh Shegokar",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.48.1",
+    "@types/node": "^22.5.0",
+    "dotenv": "^16.6.1",
+    "typescript": "^5.6.2"
+  }
+}

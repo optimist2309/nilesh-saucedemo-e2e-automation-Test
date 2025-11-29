@@ -1,0 +1,28 @@
+<testsuites id="" name="" tests="5" failures="0" skipped="0" errors="0" time="23.998926">
+<testsuite name="specs\positive.spec.ts" timestamp="2025-11-12T15:58:24.033Z" hostname="chromium" tests="5" failures="0" skipped="0" time="20.33" errors="0">
+<testcase name="Positive Test Cases - E-Commerce Workflows › TC-001: Should successfully login with valid credentials" classname="specs\positive.spec.ts" time="4.62">
+<system-out>
+<![CDATA[[⏳ STEP] 2025-11-12T15:58:28.307Z - Step 1: Initialize login page - in-progress
+[✅ STEP] 2025-11-12T15:58:28.310Z - Step 1: Initialize login page - completed
+[⏳ STEP] 2025-11-12T15:58:28.310Z - Step 2: Perform login - in-progress
+[✅ STEP] 2025-11-12T15:58:28.530Z - Step 2: Perform login - completed
+[⏳ STEP] 2025-11-12T15:58:28.530Z - Step 3: Verify navigation - in-progress
+[✅ STEP] 2025-11-12T15:58:28.540Z - Step 3: Verify navigation - completed
+[⏳ STEP] 2025-11-12T15:58:28.540Z - Step 4: Verify products page - in-progress
+[✅ STEP] 2025-11-12T15:58:28.549Z - Step 4: Verify products page - completed
+[⏳ STEP] 2025-11-12T15:58:28.549Z - Step 5: Verify product count - in-progress
+[✅ STEP] 2025-11-12T15:58:28.557Z - Step 5: Verify product count - completed
+[ℹ️  INFO] 2025-11-12T15:58:28.557Z | {"username":"standard_user","productCount":6,"url":"https://www.saucedemo.com/inventory.html"} - TC-001: Test passed successfully
+]]>
+</system-out>
+</testcase>
+<testcase name="Positive Test Cases - E-Commerce Workflows › TC-002: Should display all products with correct information" classname="specs\positive.spec.ts" time="2.68">
+</testcase>
+<testcase name="Positive Test Cases - E-Commerce Workflows › TC-003: Should add product to cart successfully" classname="specs\positive.spec.ts" time="4.748">
+</testcase>
+<testcase name="Positive Test Cases - E-Commerce Workflows › TC-004: Should add multiple products to cart" classname="specs\positive.spec.ts" time="4.933">
+</testcase>
+<testcase name="Positive Test Cases - E-Commerce Workflows › TC-005: Should view cart with added items" classname="specs\positive.spec.ts" time="3.349">
+</testcase>
+</testsuite>
+</testsuites>
